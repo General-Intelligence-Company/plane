@@ -53,6 +53,7 @@ COPY apps/api/package.json ./package.json
 
 RUN apk --no-cache add "bash~=5.2"
 COPY apps/api/bin ./bin/
+COPY docker-entrypoint-worker-render.sh ./bin/docker-entrypoint-worker-render.sh
 
 RUN mkdir -p /code/plane/logs
 RUN chmod +x ./bin/*
@@ -61,4 +62,4 @@ RUN chmod -R 777 /code
 # Expose container port and run entry point script
 EXPOSE 8000
 
-CMD ["./bin/docker-entrypoint-worker.sh"]
+CMD ["./bin/docker-entrypoint-worker-render.sh"]
