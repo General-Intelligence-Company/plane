@@ -1,0 +1,5 @@
+FROM postgres:15-alpine
+ENV POSTGRES_USER=plane
+ENV POSTGRES_PASSWORD=plane_render_pass_2026
+ENV POSTGRES_DB=plane
+EXPOSE 5432
