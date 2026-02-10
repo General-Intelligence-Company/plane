@@ -108,3 +108,4 @@ build/
 .react-router/
 temp/
 scripts/
+!apps/api/scripts/
