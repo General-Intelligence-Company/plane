@@ -86,5 +86,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/api/v1/health-check/')" || exit 1
 
-# Default command - API server
-CMD ["./bin/docker-entrypoint-api.sh"]
+# Default command - API server (Railway-specific entrypoint runs migrations on startup)
+CMD ["./bin/docker-entrypoint-api-railway.sh"]
