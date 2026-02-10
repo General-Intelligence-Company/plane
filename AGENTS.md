@@ -49,7 +49,7 @@ pnpm --filter=@plane/ui storybook  # Start Storybook on port 6006
 - **Custom Lint Rules**: `python apps/api/scripts/custom_lint_rules.py [files...]`
 - **Line Length**: 120 characters maximum
 - **Docstrings**: Google style convention
-- **Imports**: Sorted by Ruff isort rules; use PEP 585 generics (`list[int]` not `List[int]`)
+- **Imports**: Sorted by Ruff isort rules
 - **Tests**: Use pytest markers (`@pytest.mark.unit`, `@pytest.mark.contract`, `@pytest.mark.smoke`)
 
 ### Custom Python Lint Rules

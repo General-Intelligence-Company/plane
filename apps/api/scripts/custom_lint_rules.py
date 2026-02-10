@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+# Copyright (c) 2023-present Plane Software, Inc. and contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+# See the LICENSE file for details.
+
 """
 Custom lint rules for the Plane backend codebase.
 
@@ -102,10 +105,10 @@ class CustomLinter(ast.NodeVisitor):
 
         # Check for various suppression patterns
         suppression_patterns = [
-            rf"#\s*lint:\s*ignore-{rule}",  # lint: ignore-<rule>
-            rf"#\s*noqa:\s*{rule}",  # noqa: <rule>
-            r"#\s*noqa:\s*custom-lint",  # noqa: custom-lint (all custom rules)
-            r"#\s*noqa\s*$",  # noqa (all rules)
+            rf"#\s*lint:\s*ignore-{rule}",  # lint ignore-<rule>
+            rf"#\s*noqa:\s*{rule}",  # "noqa" with specific rule
+            r"#\s*noqa:\s*custom-lint",  # "noqa" custom-lint (all custom rules)
+            r"#\s*noqa\s*$",  # "noqa" alone (all rules)
         ]
 
         return any(re.search(pattern, line) for pattern in suppression_patterns)
