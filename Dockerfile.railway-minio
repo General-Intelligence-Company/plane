@@ -14,10 +14,8 @@ FROM minio/minio:latest
 # - MINIO_ROOT_PASSWORD (required)
 
 # Create data directory
+# Note: Railway manages volumes externally, VOLUME instruction not allowed
 RUN mkdir -p /data
-
-# Volume for persistent storage (Railway handles this)
-VOLUME ["/data"]
 
 # Expose ports
 EXPOSE 9000 9090
