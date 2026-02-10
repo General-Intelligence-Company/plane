@@ -46,10 +46,36 @@ pnpm --filter=@plane/ui storybook  # Start Storybook on port 6006
 
 ### Python (Backend API)
 - **Linting/Formatting**: Ruff (configured in `apps/api/pyproject.toml`)
+- **Custom Lint Rules**: Run `python apps/api/bin/custom_lint_rules.py <files>` (see below)
 - **Line Length**: 120 characters maximum
 - **Docstrings**: Google style convention
-- **Imports**: Sorted by Ruff isort rules
+- **Imports**: Sorted by Ruff isort rules; use PEP 585 generics (`list[int]` not `List[int]`)
 - **Tests**: Use pytest markers (`@pytest.mark.unit`, `@pytest.mark.contract`, `@pytest.mark.smoke`)
+
+#### Custom Python Lint Rules
+
+The project enforces additional coding standards via `apps/api/bin/custom_lint_rules.py`:
+
+| Rule | What it enforces | Fix |
+|------|-----------------|-----|
+| `no-dataclass` | No `@dataclass` usage | Use Pydantic `BaseModel` |
+| `no-typed-dict` | No `TypedDict` usage | Use Pydantic `BaseModel` |
+| `no-dict-tuple-return` | No `dict`/`tuple` return types | Return a `BaseModel` |
+| `modal-complexity` | Modal functions: ≤50 lines, complexity ≤10 | Split into smaller functions |
+| `tool-name-string` | No hardcoded tool name strings | Use `ToolClass.name` |
+
+**How to run:**
+```bash
+cd apps/api
+python bin/custom_lint_rules.py .           # Check all files
+python bin/custom_lint_rules.py plane/api/  # Check specific directory
+```
+
+**Suppression (per-line):**
+- `# noqa: <rule>` - Suppress specific rule
+- `# lint: ignore-<rule>` - Alternative suppression syntax
+- `# noqa: custom-lint` - Suppress all custom rules
+- `# noqa` - Suppress all checks on line
 
 ## Testing Requirements
 

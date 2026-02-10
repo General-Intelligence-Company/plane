@@ -48,8 +48,10 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.ruff.lint]
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F"]
+# Enable pycodestyle (`E`), Pyflakes (`F`), and pyupgrade (`UP`) codes.
+# UP006: Use `list` instead of `typing.List` (PEP 585)
+# UP035: Use modern imports from `collections.abc` instead of `collections`
+select = ["E", "F", "UP006", "UP035"]
 ignore = []
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
