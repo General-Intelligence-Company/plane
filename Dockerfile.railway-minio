@@ -1,0 +1,12 @@
+# Railway-specific Dockerfile for MinIO object storage
+# Uses the official MinIO image
+
+FROM minio/minio:latest
+
+# Expose MinIO API port and console port
+EXPOSE 9000
+EXPOSE 9001
+
+# Run MinIO server with console access
+# Environment variables MINIO_ROOT_USER and MINIO_ROOT_PASSWORD should be set at runtime
+CMD ["server", "/data", "--console-address", ":9001"]
