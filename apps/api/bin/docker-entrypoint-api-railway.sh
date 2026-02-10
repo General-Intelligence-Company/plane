@@ -5,6 +5,9 @@
 # migration service in its deployment architecture.
 set -e
 
+# Default GUNICORN_WORKERS if not set
+export GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
+
 # Wait for database to be available
 python manage.py wait_for_db
 
