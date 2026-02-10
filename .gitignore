@@ -101,12 +101,13 @@ dev-editor
 
 storybook-static
 
-CLAUDE.md
-
 build/
 .react-router/
 
 build/
 .react-router/
 temp/
+
+# Ignore scripts directory except for apps/api/scripts (custom lint rules)
 scripts/
+!apps/api/scripts/

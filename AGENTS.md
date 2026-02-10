@@ -46,10 +46,33 @@ pnpm --filter=@plane/ui storybook  # Start Storybook on port 6006
 
 ### Python (Backend API)
 - **Linting/Formatting**: Ruff (configured in `apps/api/pyproject.toml`)
+- **Custom Lint Rules**: `python apps/api/scripts/custom_lint_rules.py [files...]`
 - **Line Length**: 120 characters maximum
 - **Docstrings**: Google style convention
-- **Imports**: Sorted by Ruff isort rules
+- **Imports**: Sorted by Ruff isort rules; use PEP 585 generics (`list[int]` not `List[int]`)
 - **Tests**: Use pytest markers (`@pytest.mark.unit`, `@pytest.mark.contract`, `@pytest.mark.smoke`)
+
+### Custom Python Lint Rules
+
+The backend has custom lint rules that enforce project conventions. Run them with:
+
+```bash
+python apps/api/scripts/custom_lint_rules.py [files...]
+```
+
+| Rule | What it enforces | Error message |
+|------|------------------|---------------|
+| `no-dataclass` | No `@dataclass` usage; use Pydantic `BaseModel` | `@dataclass is not allowed. Use Pydantic BaseModel instead.` |
+| `no-typed-dict` | No `TypedDict` usage; use Pydantic `BaseModel` | `TypedDict is not allowed. Use Pydantic BaseModel instead.` |
+| `no-dict-tuple-return` | No explicit `dict`/`tuple` return annotations; return a `BaseModel` | `Explicit dict/tuple return annotations are not allowed.` |
+| `modal-complexity` | Modal functions must be <= 50 non-empty lines and cyclomatic complexity <= 10 | `Modal function is too long` / `complexity too high` |
+| `tool-name-string` | No hardcoded tool name strings; use `ToolClass.name` | `Hardcoded tool name string. Use ToolClass.name instead.` |
+
+**Suppression mechanisms** (per-line):
+- `# lint: ignore-<rule>` - Suppress specific rule
+- `# noqa: <rule>` - Suppress specific rule
+- `# noqa: custom-lint` - Suppress all custom lint rules
+- `# noqa` - Suppress all rules
 
 ## Testing Requirements
 
@@ -89,6 +112,7 @@ Before creating a commit, ensure:
 - [ ] No `any` types without explicit justification
 - [ ] New features have corresponding tests
 - [ ] API changes update relevant serializers and tests
+- [ ] Backend Python code passes custom lint rules: `python apps/api/scripts/custom_lint_rules.py`
 - [ ] Copyright headers present on new files
 - [ ] No console.log statements (use `@plane/logger` instead)
 - [ ] No hardcoded secrets or credentials
