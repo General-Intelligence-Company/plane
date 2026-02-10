@@ -28,7 +28,6 @@ from plane.bgtasks.webhook_task import model_activity, webhook_activity
 from plane.db.models import (
     UserFavorite,
     DeployBoard,
-    ProjectUserProperty,
     Intake,
     Project,
     ProjectIdentifier,
@@ -36,7 +35,6 @@ from plane.db.models import (
     ProjectNetwork,
     State,
     DEFAULT_STATES,
-    UserFavorite,
     Workspace,
     WorkspaceMember,
 )
