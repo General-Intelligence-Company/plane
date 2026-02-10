@@ -101,8 +101,6 @@ dev-editor
 
 storybook-static
 
-CLAUDE.md
-
 build/
 .react-router/
 
@@ -110,3 +108,4 @@ build/
 .react-router/
 temp/
 scripts/
+!apps/api/scripts/
