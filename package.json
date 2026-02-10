@@ -49,6 +49,10 @@
     ],
     "*.{js,jsx,ts,tsx,cjs,mjs,cts,mts}": [
       "pnpm exec eslint --fix --max-warnings=0 --no-warn-ignored"
+    ],
+    "apps/api/**/*.py": [
+      "ruff check --fix",
+      "ruff format"
     ]
   },
   "pnpm": {
