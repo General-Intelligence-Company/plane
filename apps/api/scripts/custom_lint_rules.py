@@ -32,9 +32,32 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
-# Legacy allowlist for paths that skip certain rules
+# Legacy allowlist for paths that skip certain rules.
+# These violations existed before the custom lint rules were added to CI.
+# New code should NOT be added to this list - fix violations instead.
 LEGACY_ALLOWLIST: dict[str, set[str]] = {
-    # Example: "plane/legacy_module/": {"no-dataclass", "no-typed-dict"},
+    # Analytics views
+    "plane/app/views/analytic/advance.py": {"no-dict-tuple-return"},
+    "plane/app/views/analytic/project_analytics.py": {"no-dict-tuple-return"},
+    # External views
+    "plane/app/views/external/base.py": {"no-dict-tuple-return"},
+    # Background tasks
+    "plane/bgtasks/event_tracking_task.py": {"no-dict-tuple-return"},
+    "plane/bgtasks/webhook_task.py": {"no-dict-tuple-return"},
+    "plane/bgtasks/work_item_link_task.py": {"no-dict-tuple-return"},
+    "plane/bgtasks/workspace_seed_task.py": {"no-dict-tuple-return"},
+    # Database mixins
+    "plane/db/mixins.py": {"no-dict-tuple-return"},
+    # Utilities
+    "plane/utils/build_chart.py": {"no-dict-tuple-return"},
+    "plane/utils/date_utils.py": {"no-dict-tuple-return"},
+    "plane/utils/exporters/exporter.py": {"no-dict-tuple-return"},
+    "plane/utils/exporters/formatters.py": {"no-dict-tuple-return"},
+    "plane/utils/exporters/schemas/base.py": {"no-dataclass", "no-dict-tuple-return"},
+    "plane/utils/exporters/schemas/issue.py": {"no-dict-tuple-return"},
+    "plane/utils/filters/converters.py": {"no-dict-tuple-return"},
+    "plane/utils/filters/filter_migrations.py": {"no-dict-tuple-return"},
+    "plane/utils/porters/exporter.py": {"no-dict-tuple-return"},
 }
 
 
