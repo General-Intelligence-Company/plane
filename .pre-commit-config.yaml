@@ -1,0 +1,44 @@
+# Pre-commit hooks configuration
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# Note: Frontend linting is handled by husky/lint-staged (see package.json).
+# This config focuses on Python/backend checks for developers who prefer pre-commit.
+
+repos:
+  # Ruff - Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix, --config, apps/api/pyproject.toml]
+        files: ^apps/api/
+      - id: ruff-format
+        args: [--config, apps/api/pyproject.toml]
+        files: ^apps/api/
+
+  # Custom lint rules
+  - repo: local
+    hooks:
+      - id: custom-lint
+        name: Custom Python lint rules
+        entry: python apps/api/scripts/custom_lint_rules.py
+        language: python
+        types: [python]
+        files: ^apps/api/
+        pass_filenames: true
+
+  # General code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^apps/api/
+      - id: end-of-file-fixer
+        files: ^apps/api/
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: detect-private-key

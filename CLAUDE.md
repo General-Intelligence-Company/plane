@@ -1,213 +1,170 @@
-# CLAUDE.md - Plane Project Guide
+# Plane - Project Overview
 
-This file provides guidance for Claude Code and other AI assistants working on the Plane codebase.
+Plane is an open-source project management tool for tracking issues, running cycles, and managing product roadmaps.
 
-## Project Overview
+## Architecture
 
-Plane is an open-source project management tool built with:
-- **Frontend**: React Router, TypeScript, Tailwind CSS, MobX
-- **Backend**: Django REST Framework (Python 3.12)
-- **Package Manager**: pnpm (monorepo with Turborepo)
-
-## Repository Structure
+### Monorepo Structure
 
 ```
 plane/
 ├── apps/
-│   ├── admin/          # Admin dashboard (Next.js-like)
-│   ├── api/            # Django REST API (Python)
-│   ├── live/           # Real-time collaboration service
-│   ├── space/          # Public space viewer
-│   ├── web/            # Main web application
-│   └── proxy/          # Proxy configuration
+│   ├── api/          # Django/Python backend (REST API)
+│   ├── web/          # Next.js main web application
+│   ├── admin/        # Admin dashboard
+│   ├── space/        # Public project spaces
+│   ├── live/         # Real-time collaboration service
+│   └── proxy/        # Proxy service
 ├── packages/
-│   ├── codemods/       # Code transformation utilities
-│   ├── constants/      # Shared constants
-│   ├── decorators/     # TypeScript decorators
-│   ├── editor/         # Rich text editor
-│   ├── hooks/          # React hooks
-│   ├── i18n/           # Internationalization
-│   ├── logger/         # Logging utilities
-│   ├── propel/         # Animation library
-│   ├── services/       # API service layer
-│   ├── shared-state/   # MobX stores
-│   ├── tailwind-config/# Tailwind configuration
-│   ├── types/          # TypeScript types
-│   ├── ui/             # UI component library
-│   └── utils/          # Utility functions
-└── deployments/        # Deployment configurations
+│   ├── ui/           # Shared React components
+│   ├── editor/       # Rich text editor
+│   ├── services/     # API service layer
+│   ├── types/        # Shared TypeScript types
+│   ├── hooks/        # Shared React hooks
+│   ├── utils/        # Utility functions
+│   ├── constants/    # Shared constants
+│   ├── i18n/         # Internationalization
+│   ├── logger/       # Logging utilities
+│   ├── shared-state/ # MobX state management
+│   ├── decorators/   # TypeScript decorators
+│   ├── codemods/     # Code transformation tools
+│   ├── propel/       # Propel integration
+│   └── tailwind-config/ # Tailwind CSS configuration
+└── deployments/      # Docker and Kubernetes configs
 ```
 
-## Quick Commands
+### Tech Stack
 
-### Development
+- **Frontend**: React, Next.js, TypeScript, Tailwind CSS, MobX
+- **Backend**: Django, Django REST Framework, Python 3.12
+- **Database**: PostgreSQL
+- **Cache**: Redis
+- **Build**: pnpm workspaces, Turbo
+
+## Development Commands
+
+### Quick Start
+
 ```bash
-pnpm dev                            # Start all dev servers (web:3000, admin:3001)
-pnpm build                          # Build all packages and apps
-pnpm turbo run <cmd> --filter=<pkg> # Target specific package/app
+# Install dependencies
+pnpm install
+
+# Start all dev servers
+pnpm dev                              # web:3000, admin:3001
+
+# Build all packages
+pnpm build
 ```
 
 ### Quality Checks
-```bash
-pnpm check                          # Run all checks (format, lint, types)
-pnpm check:lint                     # ESLint across all packages
-pnpm check:types                    # TypeScript type checking
-pnpm check:format                   # Prettier format check
-```
 
-### Auto-fix
 ```bash
-pnpm fix                            # Auto-fix format and lint issues
-pnpm fix:lint                       # Fix ESLint issues only
-pnpm fix:format                     # Fix Prettier issues only
+# Run all checks (recommended before committing)
+pnpm check                            # Format, lint, and type checks
+
+# Individual checks
+pnpm check:lint                       # ESLint
+pnpm check:format                     # Prettier
+pnpm check:types                      # TypeScript
+
+# Auto-fix issues
+pnpm fix                              # Fix all
+pnpm fix:lint                         # Fix lint only
+pnpm fix:format                       # Fix format only
 ```
 
 ### Testing
+
 ```bash
-pnpm --filter=live test             # Run frontend tests (vitest)
-cd apps/api && python run_tests.py  # Run backend tests (pytest)
+# Frontend tests
+pnpm --filter=live test               # Vitest tests
+
+# Backend tests
+cd apps/api && python run_tests.py    # All tests
+cd apps/api && python -m pytest -m unit  # Unit tests only
 ```
 
-### Backend Linting
+### Package-specific Commands
+
 ```bash
-cd apps/api
-ruff check .                        # Run Ruff linter
-ruff check --fix .                  # Auto-fix Ruff issues
-python bin/custom_lint_rules.py .   # Run custom lint rules
+# Target specific package/app
+pnpm turbo run <cmd> --filter=<pkg>
+
+# Examples
+pnpm turbo run build --filter=@plane/ui
+pnpm --filter=@plane/ui storybook     # Storybook on port 6006
 ```
 
-## Code Style Guidelines
+## Code Style
 
 ### TypeScript/JavaScript
-- **ESLint 9**: Flat config with React, TypeScript, Prettier integration
+
+- **ESLint**: Flat config (ESLint 9) with TypeScript, React, and accessibility rules
 - **Prettier**: Auto-formatting with Tailwind plugin
-- Use `workspace:*` for internal package dependencies
-- Use `catalog:` for external dependencies (managed in pnpm-workspace.yaml)
-- Strict TypeScript mode enabled; all files must be fully typed
-- No `any` types without explicit justification
-- Prefix unused variables with `_` (e.g., `_unusedParam`)
-- Use `@plane/logger` instead of `console.log`
-- Build reusable components in `@plane/ui` with Storybook stories
+- **Imports**: Use `workspace:*` for internal packages, `catalog:` for external
+- **Types**: Strict mode; no `any` without justification
+- **Naming**: `camelCase` for variables/functions, `PascalCase` for components/types
+- **Unused vars**: Prefix with `_` (e.g., `_unusedParam`)
 
-### Python (Backend API)
-- **Ruff**: Linting and formatting (configured in `apps/api/pyproject.toml`)
-- **Ruff Rules**: E (pycodestyle), F (Pyflakes), UP006/UP035 (modern type annotations)
-- Line length: 120 characters
-- Docstrings: Google style convention
-- Use PEP 585 generics (`list[int]` instead of `typing.List[int]`)
-- Use pytest markers: `@pytest.mark.unit`, `@pytest.mark.contract`, `@pytest.mark.smoke`
+### Python (Backend)
 
-### Custom Python Lint Rules
-Located at `apps/api/bin/custom_lint_rules.py`:
+- **Linter**: Ruff with E, F, UP006, UP035 rules
+- **Line length**: 120 characters
+- **Docstrings**: Google style convention
+- **Target version**: Python 3.12
 
-| Rule | Description |
-|------|-------------|
-| `no-dataclass` | Use Pydantic `BaseModel` instead of `@dataclass` |
-| `no-typed-dict` | Use Pydantic `BaseModel` instead of `TypedDict` |
-| `no-dict-tuple-return` | Return a `BaseModel` instead of `dict`/`tuple` |
-| `modal-complexity` | Modal functions: max 50 lines, complexity <= 10 |
-| `tool-name-string` | Use `ToolClass.name` instead of hardcoded strings |
+### Custom Lint Rules (Backend)
 
-Suppression: `# noqa: <rule>` or `# lint: ignore-<rule>` or `# noqa: custom-lint`
+The backend has custom lint rules in `apps/api/scripts/custom_lint_rules.py`:
 
-## Architecture Patterns
+| Rule                   | Enforcement                                     |
+| ---------------------- | ----------------------------------------------- |
+| `no-dataclass`         | Use Pydantic BaseModel instead of @dataclass    |
+| `no-typed-dict`        | Use Pydantic BaseModel instead of TypedDict     |
+| `no-dict-tuple-return` | Return BaseModel instead of dict/tuple          |
+| `modal-complexity`     | Modal functions: max 50 lines, complexity <= 10 |
+| `tool-name-string`     | Use ToolClass.name instead of hardcoded strings |
 
-### Frontend State Management
-- MobX stores in `packages/shared-state`
-- Use `observer()` wrapper on components that read observables
-- Services in `packages/services` handle API calls
+Suppress with `# noqa: <rule>` or `# lint: ignore-<rule>`
 
-### Backend API Structure
-- Django REST Framework with ViewSets
-- Serializers for all I/O validation
-- Permission classes for access control
-- Use `@transaction.atomic` for multi-step operations
+## Pre-commit Hooks
 
-### Component Development
-- New UI components go in `@plane/ui`
-- Include TypeScript prop types
-- Create Storybook stories for visual testing
-- Use `clsx` or `tailwind-merge` for conditional classes
+Husky + lint-staged automatically runs on commit:
+
+- Prettier formatting on all files
+- ESLint on JS/TS files
 
 ## CI/CD Workflows
 
-| Workflow | Purpose |
-|----------|---------|
-| `pull-request-build-lint-web-apps.yml` | Build, lint, type-check frontend |
-| `pull-request-build-lint-api.yml` | Lint Python backend with Ruff |
-| `pull-request-test-api.yml` | Run pytest (unit + contract tests) |
-| `pull-request-test-frontend.yml` | Run vitest for frontend |
-| `codeql.yml` | Security analysis |
-| `codespell.yml` | Spell checking |
-| `copyright-check.yml` | Copyright header verification |
+- **Frontend**: Build, lint, type check, format check, tests
+- **Backend**: Ruff lint, unit tests, contract tests
+- **Other**: CodeQL, codespell, copyright check
 
-## Common Pitfalls
+## Key Patterns
 
-### Frontend
-- Always `await` async functions properly
-- Wrap API calls in try-catch
-- Use `observer()` on components reading MobX observables
-- Clean up subscriptions in useEffect cleanup functions
+### State Management
 
-### Backend
-- Run `makemigrations` after model changes
-- Use `select_related()` / `prefetch_related()` to avoid N+1 queries
-- Never trust client input; validate with serializers
-- Use `@transaction.atomic` for multi-step database operations
+MobX stores in `packages/shared-state`. Use reactive patterns with `observer()` HOC.
 
-## Environment Setup
+### API Services
 
-1. Clone and install dependencies:
-   ```bash
-   git clone https://github.com/makeplane/plane.git
-   cd plane
-   pnpm install
-   ```
+Service classes in `packages/services`. One file per domain area.
 
-2. Set up environment:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+### Components
 
-3. Start development:
-   ```bash
-   # Frontend only
-   pnpm dev
+Build reusable components in `@plane/ui` with Storybook stories.
 
-   # Full stack with Docker
-   docker compose -f docker-compose-local.yml up
-   ```
+### Error Handling
 
-## PR Guidelines
+Use try-catch with proper types. Log via `@plane/logger`.
 
-- Default target branch: `preview`
-- Use conventional commit format: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
-- Run `pnpm check` before committing
-- Include tests for new features
-- Update documentation for API changes
+## Environment Variables
 
-## Testing Guidelines
-
-### Frontend Testing
-- **Framework**: Vitest
-- **Location**: `apps/<app>/tests/` or alongside source files as `*.test.ts`
-- Run tests: `pnpm --filter=<package> test`
-
-### Backend Testing
-- **Framework**: pytest with Django
-- **Location**: `apps/api/plane/tests/` (organized by `unit/`, `contract/`, `smoke/`)
-- **Markers**: `@pytest.mark.unit`, `@pytest.mark.contract`, `@pytest.mark.smoke`
-- Run tests: `cd apps/api && python run_tests.py`
-
-### Test Coverage Expectations
-- New features: Must include unit tests
-- Bug fixes: Should include regression tests
-- Backend: Aim for 90% coverage on new code
+Copy `.env.example` to `.env` and configure. Key variables documented in the example files.
 
 ## Related Documentation
 
-- [AGENTS.md](./AGENTS.md) - Detailed AI agent guidelines
+- [AGENTS.md](./AGENTS.md) - AI agent guidelines and checklists
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
-- [Product Docs](https://docs.plane.so/) - User documentation
-- [Developer Docs](https://developers.plane.so/) - Technical documentation
+- [Product docs](https://docs.plane.so/) - User documentation
+- [Developer docs](https://developers.plane.so/) - API and self-hosting docs

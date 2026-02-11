@@ -45,34 +45,65 @@ COPY turbo.json turbo.json
 RUN pnpm install --frozen-lockfile
 
 # Railway injects these as environment variables at build time
+# For PR environments, URLs are computed from Railway service variables
 ARG VITE_API_BASE_URL=""
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
 ARG VITE_ADMIN_BASE_URL=""
-ENV VITE_ADMIN_BASE_URL=$VITE_ADMIN_BASE_URL
-
 ARG VITE_ADMIN_BASE_PATH="/god-mode"
-ENV VITE_ADMIN_BASE_PATH=$VITE_ADMIN_BASE_PATH
-
 ARG VITE_LIVE_BASE_URL=""
-ENV VITE_LIVE_BASE_URL=$VITE_LIVE_BASE_URL
-
 ARG VITE_LIVE_BASE_PATH="/live"
-ENV VITE_LIVE_BASE_PATH=$VITE_LIVE_BASE_PATH
-
 ARG VITE_SPACE_BASE_URL=""
-ENV VITE_SPACE_BASE_URL=$VITE_SPACE_BASE_URL
-
 ARG VITE_SPACE_BASE_PATH="/spaces"
-ENV VITE_SPACE_BASE_PATH=$VITE_SPACE_BASE_PATH
-
 ARG VITE_WEB_BASE_URL=""
-ENV VITE_WEB_BASE_URL=$VITE_WEB_BASE_URL
 
+# Railway PR environment detection variables
+ARG RAILWAY_ENVIRONMENT_NAME=""
+ARG RAILWAY_SERVICE_PLANE_API_V2_URL=""
+ARG RAILWAY_SERVICE_PLANE_WEB_V2_URL=""
+
+ENV VITE_ADMIN_BASE_PATH=$VITE_ADMIN_BASE_PATH
+ENV VITE_LIVE_BASE_PATH=$VITE_LIVE_BASE_PATH
+ENV VITE_SPACE_BASE_PATH=$VITE_SPACE_BASE_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV TURBO_TELEMETRY_DISABLED=1
 
-RUN pnpm turbo run build --filter=web
+# Build script that computes URLs for PR environments
+# If RAILWAY_ENVIRONMENT_NAME contains "pr-" and service URLs are available,
+# use them instead of the provided base URLs
+RUN set -e; \
+    FINAL_API_URL="$VITE_API_BASE_URL"; \
+    FINAL_WEB_URL="$VITE_WEB_BASE_URL"; \
+    FINAL_ADMIN_URL="$VITE_ADMIN_BASE_URL"; \
+    FINAL_LIVE_URL="$VITE_LIVE_BASE_URL"; \
+    FINAL_SPACE_URL="$VITE_SPACE_BASE_URL"; \
+    \
+    if echo "$RAILWAY_ENVIRONMENT_NAME" | grep -q "pr-"; then \
+      echo "PR environment detected: $RAILWAY_ENVIRONMENT_NAME"; \
+      if [ -n "$RAILWAY_SERVICE_PLANE_API_V2_URL" ]; then \
+        FINAL_API_URL="https://${RAILWAY_SERVICE_PLANE_API_V2_URL}"; \
+        echo "Using PR API URL: $FINAL_API_URL"; \
+      fi; \
+      if [ -n "$RAILWAY_SERVICE_PLANE_WEB_V2_URL" ]; then \
+        FINAL_WEB_URL="https://${RAILWAY_SERVICE_PLANE_WEB_V2_URL}"; \
+        FINAL_ADMIN_URL="https://${RAILWAY_SERVICE_PLANE_WEB_V2_URL}"; \
+        FINAL_LIVE_URL="https://${RAILWAY_SERVICE_PLANE_WEB_V2_URL}"; \
+        FINAL_SPACE_URL="https://${RAILWAY_SERVICE_PLANE_WEB_V2_URL}"; \
+        echo "Using PR Web URL: $FINAL_WEB_URL"; \
+      fi; \
+    else \
+      echo "Production/staging environment: $RAILWAY_ENVIRONMENT_NAME"; \
+    fi; \
+    \
+    export VITE_API_BASE_URL="$FINAL_API_URL"; \
+    export VITE_WEB_BASE_URL="$FINAL_WEB_URL"; \
+    export VITE_ADMIN_BASE_URL="$FINAL_ADMIN_URL"; \
+    export VITE_LIVE_BASE_URL="$FINAL_LIVE_URL"; \
+    export VITE_SPACE_BASE_URL="$FINAL_SPACE_URL"; \
+    \
+    echo "Final build config:"; \
+    echo "  VITE_API_BASE_URL=$VITE_API_BASE_URL"; \
+    echo "  VITE_WEB_BASE_URL=$VITE_WEB_BASE_URL"; \
+    \
+    pnpm turbo run build --filter=web
 
 # *****************************************************************************
 # STAGE 3: Serve with nginx (production)

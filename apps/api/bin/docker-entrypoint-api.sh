@@ -1,13 +1,21 @@
 #!/bin/bash
 set -e
+
+echo "Starting Plane API entrypoint script..."
+
 python manage.py wait_for_db
-# Wait for migrations
-python manage.py wait_for_migrations
 
-# Create the default bucket
-#!/bin/bash
+# For Railway PR environments, run migrations directly instead of waiting
+# This is because PR environments may not have a separate migration job
+if [[ "$RAILWAY_ENVIRONMENT_NAME" == *"pr-"* ]]; then
+    echo "PR environment detected ($RAILWAY_ENVIRONMENT_NAME). Running migrations directly..."
+    python manage.py migrate --noinput
+else
+    # Wait for migrations (production uses separate migrator service)
+    python manage.py wait_for_migrations
+fi
 
-# Collect system information
+# Collect system information for machine signature
 HOSTNAME=$(hostname)
 MAC_ADDRESS=$(ip link show | awk '/ether/ {print $2}' | head -n 1)
 CPU_INFO=$(cat /proc/cpuinfo)
@@ -35,4 +43,9 @@ python manage.py clear_cache
 # Collect static files
 python manage.py collectstatic --noinput
 
-exec gunicorn -w "$GUNICORN_WORKERS" -k uvicorn.workers.UvicornWorker plane.asgi:application --bind 0.0.0.0:"${PORT:-8000}" --max-requests 1200 --max-requests-jitter 1000 --access-logfile -
+# Set default values for environment variables if not provided
+GUNICORN_WORKERS="${GUNICORN_WORKERS:-1}"
+PORT="${PORT:-8000}"
+
+echo "Starting gunicorn server with $GUNICORN_WORKERS workers on port $PORT..."
+exec gunicorn -w "$GUNICORN_WORKERS" -k uvicorn.workers.UvicornWorker plane.asgi:application --bind 0.0.0.0:"$PORT" --max-requests 1200 --max-requests-jitter 1000 --access-logfile -

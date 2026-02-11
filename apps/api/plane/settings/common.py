@@ -121,12 +121,36 @@ CORS_ALLOW_CREDENTIALS = True
 cors_origins_raw = os.environ.get("CORS_ALLOWED_ORIGINS", "")
 # filter out empty strings
 cors_allowed_origins = [origin.strip() for origin in cors_origins_raw.split(",") if origin.strip()]
+
+# Railway PR environment support: dynamically add PR domain to CORS
+# RAILWAY_ENVIRONMENT_NAME contains "pr-" for PR environments (e.g., "plane-pr-10")
+# RAILWAY_PUBLIC_DOMAIN contains the auto-generated domain for the service
+railway_env_name = os.environ.get("RAILWAY_ENVIRONMENT_NAME", "")
+railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+railway_api_url = os.environ.get("RAILWAY_SERVICE_PLANE_API_V2_URL", "")
+railway_web_url = os.environ.get("RAILWAY_SERVICE_PLANE_WEB_V2_URL", "")
+
+if "pr-" in railway_env_name:
+    # Add Railway PR domains to CORS allowed origins
+    if railway_public_domain:
+        cors_allowed_origins.append(f"https://{railway_public_domain}")
+    if railway_web_url:
+        cors_allowed_origins.append(f"https://{railway_web_url}")
+    if railway_api_url:
+        cors_allowed_origins.append(f"https://{railway_api_url}")
+
 if cors_allowed_origins:
     CORS_ALLOWED_ORIGINS = cors_allowed_origins
     secure_origins = False if [origin for origin in cors_allowed_origins if "http:" in origin] else True
 else:
     CORS_ALLOW_ALL_ORIGINS = True
     secure_origins = False
+
+# For PR environments, also allow regex patterns for Railway domains
+if "pr-" in railway_env_name:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https://.*\.up\.railway\.app$",
+    ]
 
 CORS_ALLOW_HEADERS = [*default_headers, "X-API-Key"]
 
@@ -332,34 +356,40 @@ CSRF_FAILURE_VIEW = "plane.authentication.views.common.csrf_failure"
 
 ######  Base URLs ######
 
+# Helper function to compute Railway PR URLs
+def _get_railway_pr_url(env_var_name: str, railway_service_url: str) -> str | None:
+    """Get URL from env var, or compute from Railway service URL for PR environments."""
+    url = os.environ.get(env_var_name, None)
+    if url and is_valid_url(url):
+        return url
+    # For PR environments, compute URL from Railway service variable
+    if "pr-" in railway_env_name and railway_service_url:
+        return f"https://{railway_service_url}"
+    return None
+
+
 # Admin Base URL
-ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", None)
-if ADMIN_BASE_URL and not is_valid_url(ADMIN_BASE_URL):
-    ADMIN_BASE_URL = None
+ADMIN_BASE_URL = _get_railway_pr_url("ADMIN_BASE_URL", railway_web_url)
 ADMIN_BASE_PATH = os.environ.get("ADMIN_BASE_PATH", "/god-mode/")
 
 # Space Base URL
-SPACE_BASE_URL = os.environ.get("SPACE_BASE_URL", None)
-if SPACE_BASE_URL and not is_valid_url(SPACE_BASE_URL):
-    SPACE_BASE_URL = None
+SPACE_BASE_URL = _get_railway_pr_url("SPACE_BASE_URL", railway_web_url)
 SPACE_BASE_PATH = os.environ.get("SPACE_BASE_PATH", "/spaces/")
 
 # App Base URL
-APP_BASE_URL = os.environ.get("APP_BASE_URL", None)
-if APP_BASE_URL and not is_valid_url(APP_BASE_URL):
-    APP_BASE_URL = None
+APP_BASE_URL = _get_railway_pr_url("APP_BASE_URL", railway_web_url)
 APP_BASE_PATH = os.environ.get("APP_BASE_PATH", "/")
 
 # Live Base URL
-LIVE_BASE_URL = os.environ.get("LIVE_BASE_URL", None)
-if LIVE_BASE_URL and not is_valid_url(LIVE_BASE_URL):
-    LIVE_BASE_URL = None
+LIVE_BASE_URL = _get_railway_pr_url("LIVE_BASE_URL", railway_web_url)
 LIVE_BASE_PATH = os.environ.get("LIVE_BASE_PATH", "/live/")
 
 LIVE_URL = urljoin(LIVE_BASE_URL, LIVE_BASE_PATH) if LIVE_BASE_URL else None
 
-# WEB URL
+# WEB URL - for PR environments, compute from Railway service URL
 WEB_URL = os.environ.get("WEB_URL")
+if not WEB_URL and "pr-" in railway_env_name and railway_web_url:
+    WEB_URL = f"https://{railway_web_url}"
 
 HARD_DELETE_AFTER_DAYS = int(os.environ.get("HARD_DELETE_AFTER_DAYS", 60))
 
