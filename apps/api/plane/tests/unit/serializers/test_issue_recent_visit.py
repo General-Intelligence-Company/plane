@@ -45,6 +45,7 @@ class TestIssueRecentVisitSerializer:
             name="Test Issue",
             workspace=workspace,
             project=project,
+            description_json={},
         )
 
         IssueAssignee.objects.create(issue=issue, assignee=test_user_1, project=project)

@@ -48,6 +48,7 @@ def issue(workspace, project, state, create_user):
         project=project,
         state=state,
         created_by=create_user,
+        description_json={},
     )
 
 
