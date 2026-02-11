@@ -43,5 +43,9 @@ python manage.py clear_cache
 # Collect static files
 python manage.py collectstatic --noinput
 
-echo "Starting gunicorn server..."
-exec gunicorn -w "$GUNICORN_WORKERS" -k uvicorn.workers.UvicornWorker plane.asgi:application --bind 0.0.0.0:"${PORT:-8000}" --max-requests 1200 --max-requests-jitter 1000 --access-logfile -
+# Set default values for environment variables if not provided
+GUNICORN_WORKERS="${GUNICORN_WORKERS:-1}"
+PORT="${PORT:-8000}"
+
+echo "Starting gunicorn server with $GUNICORN_WORKERS workers on port $PORT..."
+exec gunicorn -w "$GUNICORN_WORKERS" -k uvicorn.workers.UvicornWorker plane.asgi:application --bind 0.0.0.0:"$PORT" --max-requests 1200 --max-requests-jitter 1000 --access-logfile -
