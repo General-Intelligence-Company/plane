@@ -27,26 +27,30 @@ from pathlib import Path
 
 # Legacy allowlist - files that are exempt from certain rules
 # Add paths here for legacy code that would be too disruptive to refactor
-# These files predate the custom lint rules and will be migrated incrementally
+# These paths are gradually being migrated to comply with the rules
 LEGACY_ALLOWLIST: dict[str, set[str]] = {
     "no-dataclass": {
-        # Legacy exporter schemas using @dataclass
-        # TODO: Migrate to Pydantic BaseModel
-        "plane/utils/exporters/schemas/",
+        "plane/utils/exporters/schemas/base.py",
     },
     "no-typed-dict": set(),
     "no-dict-tuple-return": {
-        # Legacy views and utilities with dict/tuple returns
-        # TODO: Migrate to Pydantic BaseModel incrementally
-        "plane/app/views/analytic/",
+        "plane/app/views/analytic/advance.py",
+        "plane/app/views/analytic/project_analytics.py",
         "plane/app/views/external/base.py",
-        "plane/bgtasks/",
+        "plane/bgtasks/event_tracking_task.py",
+        "plane/bgtasks/webhook_task.py",
+        "plane/bgtasks/work_item_link_task.py",
+        "plane/bgtasks/workspace_seed_task.py",
         "plane/db/mixins.py",
         "plane/utils/build_chart.py",
         "plane/utils/date_utils.py",
-        "plane/utils/exporters/",
-        "plane/utils/filters/",
-        "plane/utils/porters/",
+        "plane/utils/exporters/exporter.py",
+        "plane/utils/exporters/formatters.py",
+        "plane/utils/exporters/schemas/base.py",
+        "plane/utils/exporters/schemas/issue.py",
+        "plane/utils/filters/converters.py",
+        "plane/utils/filters/filter_migrations.py",
+        "plane/utils/porters/exporter.py",
     },
     "modal-complexity": set(),
     "tool-name-string": set(),

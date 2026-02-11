@@ -135,6 +135,7 @@ Suppression: `# noqa: <rule>` or `# lint: ignore-<rule>` or `# noqa: custom-lint
 |----------|---------|
 | `pull-request-build-lint-web-apps.yml` | Build, lint, type-check frontend |
 | `pull-request-build-lint-api.yml` | Lint Python backend with Ruff |
+| `custom-lint.yml` | Run custom Python lint rules (no-dataclass, no-typed-dict, etc.) |
 | `pull-request-test-api.yml` | Run pytest (unit + contract tests) |
 | `pull-request-test-frontend.yml` | Run vitest for frontend |
 | `codeql.yml` | Security analysis |
