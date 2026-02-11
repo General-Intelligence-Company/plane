@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+
+echo "Starting Plane API entrypoint script..."
+
 python manage.py wait_for_db
 
 # For Railway PR environments, run migrations directly instead of waiting
@@ -12,10 +15,7 @@ else
     python manage.py wait_for_migrations
 fi
 
-# Create the default bucket
-#!/bin/bash
-
-# Collect system information
+# Collect system information for machine signature
 HOSTNAME=$(hostname)
 MAC_ADDRESS=$(ip link show | awk '/ether/ {print $2}' | head -n 1)
 CPU_INFO=$(cat /proc/cpuinfo)
@@ -43,4 +43,5 @@ python manage.py clear_cache
 # Collect static files
 python manage.py collectstatic --noinput
 
+echo "Starting gunicorn server..."
 exec gunicorn -w "$GUNICORN_WORKERS" -k uvicorn.workers.UvicornWorker plane.asgi:application --bind 0.0.0.0:"${PORT:-8000}" --max-requests 1200 --max-requests-jitter 1000 --access-logfile -
